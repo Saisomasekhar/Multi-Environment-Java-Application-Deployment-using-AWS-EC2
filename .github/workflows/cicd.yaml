@@ -30,12 +30,28 @@ jobs:
 
       - name: verify WAR file
         run: ls -lh target/
-      
-      - name: Deploy to Tomcat
+
+deploy-dev:
+    needs: build-sonar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download WAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: war-file
+
+      - name: Deploy to DEV Tomcat
+        env:
+          URL: ${{ secrets.TOMCAT_HOST }}
+          USER: ${{ secrets.TOMCAT_USER }}
+          PASS: ${{ secrets.TOMCAT_PASSWORD }}
         run: |
-          curl -v -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
-          -T target/Trainbook-1.0.0-SNAPSHOT.war \
-          "http://${{ secrets.TOMCAT_HOST }}:8080/manager/text/deploy?path=/TrainBook&update=true" 
+          WAR_FILE=$(ls *.war | head -n 1)
+          echo "Deploying $WAR_FILE to DEV ($URL)"
+
+          curl -v -u "$USER:$PASS" --fail --show-error -T "$WAR_FILE" \
+          "$URL/deploy?path=/train-ticket-reservation&update=true"
 
       # - name: Deploy to Tomcat
       #   run: |
@@ -55,24 +71,4 @@ jobs:
       #     -T MyWebApp/target/MyWebApp.war \
       #     "http://${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/MyWebApp&update=true"
 
-# deploy-dev:
-#     needs: build-sonar
-#     runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Download WAR Artifact
-#         uses: actions/download-artifact@v4
-#         with:
-#           name: war-file
-
-#       - name: Deploy to DEV Tomcat
-#         env:
-#           URL: ${{ secrets.TOMCAT_URL_DEV }}
-#           USER: ${{ secrets.TOMCAT_USER_DEV }}
-#           PASS: ${{ secrets.TOMCAT_PASS_DEV }}
-#         run: |
-#           WAR_FILE=$(ls *.war | head -n 1)
-#           echo "Deploying $WAR_FILE to DEV ($URL)"
-
-#           curl -v -u "$USER:$PASS" --fail --show-error -T "$WAR_FILE" \
-#           "$URL/deploy?path=/train-ticket-reservation&update=true"
