@@ -3,72 +3,58 @@ on:
   push:
     branches: 
       - main
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: set-up jdk
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'   # Updated Java version
+          java-version: '17'
       
-      - name: validate with maven
+      - name: Validate with Maven
         run: mvn validate
 
-      - name: compile with maven
+      - name: Compile with Maven
         run: mvn compile
       
-      - name: test with maven
+      - name: Test with Maven
         run: mvn test
       
-      - name: package with maven
+      - name: Package with Maven
         run: mvn clean package
 
-      - name: verify WAR file
+      - name: Verify WAR file
         run: ls -lh target/
 
-deploy-dev:
-    needs: build-sonar
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download WAR Artifact
-        uses: actions/download-artifact@v4
+      - name: Upload WAR Artifact
+        uses: actions/upload-artifact@v3
         with:
           name: war-file
+          path: target/*.war
 
-      - name: Deploy to DEV Tomcat
-        env:
-          URL: ${{ secrets.TOMCAT_HOST }}
-          USER: ${{ secrets.TOMCAT_USER }}
-          PASS: ${{ secrets.TOMCAT_PASSWORD }}
-        run: |
-          WAR_FILE=$(ls *.war | head -n 1)
-          echo "Deploying $WAR_FILE to DEV ($URL)"
+        deploy-dev:
+          needs: build-deploy
+          runs-on: ubuntu-latest
+          steps:
+            - name: Download WAR Artifact
+              uses: actions/download-artifact@v4
+              with:
+                name: war-file
 
-          curl -v -u "$USER:$PASS" --fail --show-error -T "$WAR_FILE" \
-          "$URL/deploy?path=/train-ticket-reservation&update=true"
+            - name: Deploy to DEV Tomcat
+              env:
+                URL: ${{ secrets.TOMCAT_HOST }}
+                USER: ${{ secrets.TOMCAT_USER }}
+                PASS: ${{ secrets.TOMCAT_PASSWORD }}
+              run: |
+                WAR_FILE=$(ls *.war | head -n 1)
+                echo "Deploying $WAR_FILE to DEV ($URL)"
 
-      # - name: Deploy to Tomcat
-      #   run: |
-      #     curl -v -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
-      #     -T MyWebApp/target/MyWebApp.war \
-      #     "http://${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/MyWebApp&update=true"
-
-      # - name: Deploy to Tomcat
-      #   run: |
-      #     curl -v -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
-      #     -T MyWebApp/target/MyWebApp.war \
-      #     "http://${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/MyWebApp&update=true"
-
-      # - name: Deploy to Tomcat
-      #   run: |
-      #     curl -v -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
-      #     -T MyWebApp/target/MyWebApp.war \
-      #     "http://${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/MyWebApp&update=true"
-
-
+                curl -v -u "$USER:$PASS" --fail --show-error -T "$WAR_FILE" \
+                "$URL/deploy?path=/train-ticket-reservation&update=true"
