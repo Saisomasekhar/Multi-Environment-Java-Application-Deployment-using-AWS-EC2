@@ -1,61 +1,52 @@
-name: ci/cd pipeline to deploy to tomcat
-on: 
+name: Build and Deploy train-ticket-reservation
+
+on:
   push:
-    branches: 
-      - main
+    branches:
+      - master
+  workflow_dispatch:
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
-      
-      - name: Validate with Maven
-        run: mvn validate
 
-      - name: Compile with Maven
-        run: mvn compile
-      
-      - name: Test with Maven
-        run: mvn test
-      
-      - name: Package with Maven
-        run: mvn clean package
+      - name: Build & Test with Maven
+        run: mvn clean verify
 
-      - name: Verify WAR file
-        run: ls -lh target/
-
-      - name: Upload WAR Artifact
+      - name: Upload WAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: war-file
           path: target/*.war
 
+
   deploy-dev:
-    needs: build-deploy
+    needs: build
     runs-on: ubuntu-latest
+
     steps:
-      - name: Download WAR Artifact
+      - name: Download WAR artifact
         uses: actions/download-artifact@v4
         with:
           name: war-file
 
-      - name: Deploy to DEV Tomcat
+      - name: Deploy to DEV
         env:
-          URL: ${{ secrets.TOMCAT_HOST }}
-          USER: ${{ secrets.TOMCAT_USER }}
-          PASS: ${{ secrets.TOMCAT_PASSWORD }}
+          URL: ${{ secrets.TOMCAT_URL_DEV }}
+          USER: ${{ secrets.TOMCAT_USER_DEV }}
+          PASS: ${{ secrets.TOMCAT_PASS_DEV }}
         run: |
           WAR_FILE=$(ls *.war | head -n 1)
           echo "Deploying $WAR_FILE to DEV ($URL)"
-
-          curl -v -u "$USER:$PASS" --upload-file "$WAR_FILE" \
-          "$URL/manager/text/deploy?path=/train-ticket-reservation&update=true" || \
-          { echo "Deployment failed"; exit 1; }
+          curl -u "$USER:$PASS" --fail -T "$WAR_FILE" \
+            "$URL/deploy?path=/train-ticket-reservation&update=true"
