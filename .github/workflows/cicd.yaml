@@ -29,10 +29,49 @@ jobs:
 
       - name: verify WAR file
         run: ls -lh target/
-        
-      - name: Sonar scan 
+      
+      - name: Deploy to Tomcat
         run: |
-           mvn clean verify sonar:sonar \
-            -Dsonar.projectKey=train-ticket-reservation \
-            -Dsonar.host.url="${{ secrets.SONAR_HOST }}" \
-            -Dsonar.login="${{ secrets.SONAR_TOKEN }}"
+          curl -v -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
+          -T MyWebApp/target/MyWebApp.war \
+          "http://${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/MyWebApp&update=true"
+
+      - name: Deploy to Tomcat
+        run: |
+          curl -v -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
+          -T MyWebApp/target/MyWebApp.war \
+          "http://${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/MyWebApp&update=true"
+
+      - name: Deploy to Tomcat
+        run: |
+          curl -v -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
+          -T MyWebApp/target/MyWebApp.war \
+          "http://${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/MyWebApp&update=true"
+
+      - name: Deploy to Tomcat
+        run: |
+          curl -v -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
+          -T MyWebApp/target/MyWebApp.war \
+          "http://${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/MyWebApp&update=true"
+
+# deploy-dev:
+#     needs: build-sonar
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Download WAR Artifact
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: war-file
+
+#       - name: Deploy to DEV Tomcat
+#         env:
+#           URL: ${{ secrets.TOMCAT_URL_DEV }}
+#           USER: ${{ secrets.TOMCAT_USER_DEV }}
+#           PASS: ${{ secrets.TOMCAT_PASS_DEV }}
+#         run: |
+#           WAR_FILE=$(ls *.war | head -n 1)
+#           echo "Deploying $WAR_FILE to DEV ($URL)"
+
+#           curl -v -u "$USER:$PASS" --fail --show-error -T "$WAR_FILE" \
+#           "$URL/deploy?path=/train-ticket-reservation&update=true"
