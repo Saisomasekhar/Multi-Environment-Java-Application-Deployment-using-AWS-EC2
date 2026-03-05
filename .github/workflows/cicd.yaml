@@ -56,5 +56,6 @@ jobs:
           WAR_FILE=$(ls *.war | head -n 1)
           echo "Deploying $WAR_FILE to DEV ($URL)"
 
-          curl -v -u "$USER:$PASS" --fail --show-error -T "$WAR_FILE" \
-          "$URL/deploy?path=/train-ticket-reservation&update=true"
+          curl -v -u "$USER:$PASS" --upload-file "$WAR_FILE" \
+          "$URL/manager/text/deploy?path=/train-ticket-reservation&update=true" || \
+          { echo "Deployment failed"; exit 1; }
