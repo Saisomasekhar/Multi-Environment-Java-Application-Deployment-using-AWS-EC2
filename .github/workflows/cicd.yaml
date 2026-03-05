@@ -1,7 +1,8 @@
 name: ci/cd pipeline to deploy to tomcat
 on: 
   push:
-    branches: main
+    branches: 
+      - main
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
