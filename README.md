@@ -234,6 +234,10 @@ openjdk version "17..."
 
 Download and install the required Tomcat version.
 
+```
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.121/bin/apache-tomcat-9.0.121.tar.gz
+```
+
 Example installation location:
 
 ```text
