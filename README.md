@@ -1,3 +1,4 @@
+<div align="center">
 # Multi-Environment Java Application Deployment using AWS EC2
 
 ![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20AMI-orange)
@@ -6,7 +7,7 @@
 ![Maven](https://img.shields.io/badge/Maven-Build-red)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-black)
 ![Linux](https://img.shields.io/badge/Linux-Linux-lightgrey)
-
+</div>
 ## 📌 Project Overview
 
 This project demonstrates an automated approach for deploying a Java web application across multiple environments using **AWS EC2, a Golden AMI, Apache Tomcat, Maven, and GitHub Actions**.
